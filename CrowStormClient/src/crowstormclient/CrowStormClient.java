@@ -5,9 +5,17 @@
  */
 package crowstormclient;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Map;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -25,34 +33,45 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+
+
 /**
  *
  * @author rockhowse
  */
 public class CrowStormClient extends Application {
+
+    public static ObservableList data = 
+        FXCollections.observableArrayList();  
     
-    public static final ObservableList names = 
-        FXCollections.observableArrayList();
-    public static final ObservableList data = 
-        FXCollections.observableArrayList();    
+    ListView searchResults;
+    TextField searchTextField;
+             
+    public void searchResults() {
+        JSONObject json;
+        
+        try {
+            
+            json = new JSONObject(IOUtils.toString(new URL("http://localhost:18080/company/" + searchTextField.getText() +"/5"), Charset.forName("UTF-8")));
+            data.clear();
+
+            json.toMap().forEach( (k,v) -> data.add(k + "~" + (String) v));
+            
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     
     public ListView addSearchResults() {
         ListView searchResults = new ListView(data);
         searchResults.setPrefSize(200, 250);
-     
-        names.addAll(
-             "Adam", "Alex", "Alfred", "Albert",
-             "Brenda", "Connie", "Derek", "Donny", 
-             "Lynne", "Myrtle", "Rose", "Rudolph", 
-             "Tony", "Trudy", "Williams", "Zach"
-        );
-         
-        for (int i = 0; i < names.size(); i++) {
-            data.add(names.get(i));
-        }
           
         searchResults.setItems(data);
-        searchResults.setCellFactory(ComboBoxListCell.forListView(names));   
+        searchResults.setCellFactory(ComboBoxListCell.forListView(data));   
         
         return searchResults;
     }
@@ -60,10 +79,18 @@ public class CrowStormClient extends Application {
     public void addSearchHeader(HBox hbox) {
         HBox searchHBox = new HBox();
         
-        TextField searchTextField = new TextField();
+        searchTextField = new TextField();
         
         Button searchButton = new Button("Search");
         searchButton.setPrefSize(100, 20);
+        
+                // add action handler for the log in button
+        searchButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                searchResults();
+            }
+        });
         
         searchHBox.getChildren().addAll(searchTextField, searchButton);
         searchHBox.setAlignment(Pos.CENTER_RIGHT); 
@@ -106,7 +133,7 @@ public class CrowStormClient extends Application {
         HBox hbox = addHBox();
         border.setTop(hbox);
         
-        ListView searchResults = addSearchResults();
+        searchResults = addSearchResults();
         border.setCenter(searchResults);
         
         Scene scene = new Scene(border, 800, 600);
