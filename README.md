@@ -36,4 +36,33 @@ chmod +x netbeans-8.2-javase-linux.sh
 
 After configuring the JDK, Netbeans identified the JDK at /usr. I had to explicitly select the /usr/lib/jvm/java-8-oracle/ selection.
 
+## Deployment Configuration
+
+The configuration for a deployment build was taken from the [JavaFX Deploy Tutorial](http://docs.oracle.com/javafx/2/deployment/self-contained-packaging.htm#BCGIBBCI)
+
+A native binary runnable version and .deb were created by modifying the default build.xml to include the following:
+
+~~~~
+     <target name="-post-jfx-deploy">
+       <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}" 
+                  nativeBundles="all"
+                  outdir="${basedir}/${dist.dir}" outfile="${application.title}">
+          <fx:application name="${application.title}" 
+                          mainClass="${javafx.main.class}"/>
+          <fx:resources>
+              <fx:fileset dir="${basedir}/${dist.dir}"
+                          includes="*.jar"/>
+          </fx:resources>
+          <fx:info title="${application.title}" 
+                   vendor="${application.vendor}"/>
+        </fx:deploy>          
+     </target>
+~~~~
+
+After doing a "build" you should find a new directory in your CrowStormClient directory named "dist". This is where the distributable binary bundles are created. With the configuration above you should see the following bundles created:
+
+1. dist/                        - Java Webstart Configuration ~ CrowStormClient.html + CrowStormClient.jar + CrowstormClient.jnlp
+2. dist/                        - crowstormclient-1.0.deb     ~ native debian installer
+3. dist/CrowStormClient/        - native applicationi         ~ app/ + CrowStormClient + libpackager.so + runtime
+
 
