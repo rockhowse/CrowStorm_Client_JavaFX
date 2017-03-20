@@ -6,11 +6,15 @@
 package crowstormclient;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -26,6 +30,32 @@ import javafx.stage.Stage;
  * @author rockhowse
  */
 public class CrowStormClient extends Application {
+    
+    public static final ObservableList names = 
+        FXCollections.observableArrayList();
+    public static final ObservableList data = 
+        FXCollections.observableArrayList();    
+    
+    public ListView addSearchResults() {
+        ListView searchResults = new ListView(data);
+        searchResults.setPrefSize(200, 250);
+     
+        names.addAll(
+             "Adam", "Alex", "Alfred", "Albert",
+             "Brenda", "Connie", "Derek", "Donny", 
+             "Lynne", "Myrtle", "Rose", "Rudolph", 
+             "Tony", "Trudy", "Williams", "Zach"
+        );
+         
+        for (int i = 0; i < names.size(); i++) {
+            data.add(names.get(i));
+        }
+          
+        searchResults.setItems(data);
+        searchResults.setCellFactory(ComboBoxListCell.forListView(names));   
+        
+        return searchResults;
+    }
     
     public void addSearchHeader(HBox hbox) {
         HBox searchHBox = new HBox();
@@ -76,7 +106,10 @@ public class CrowStormClient extends Application {
         HBox hbox = addHBox();
         border.setTop(hbox);
         
-        Scene scene = new Scene(border, 1200, 800);
+        ListView searchResults = addSearchResults();
+        border.setCenter(searchResults);
+        
+        Scene scene = new Scene(border, 800, 600);
         scene.getStylesheets().add
             (CrowStormClient.class.getResource("CrowStormClient.css").toExternalForm());
         primaryStage.setScene(scene);
