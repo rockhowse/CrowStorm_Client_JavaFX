@@ -27,7 +27,7 @@ readlink -f $(which java)
 /usr/lib/jvm/java-8-oracle/jre/bin/java
 ~~~~
 
-From this path, the JDK path is /usr/lib/jvm/java-8-oracle/
+From this path, the JDK path is /usr/lib/jvm/java-8-oracle/. I used this paired with --javahome when running the install script.
 
 ~~~~
 chmod +x netbeans-8.2-javase-linux.sh
