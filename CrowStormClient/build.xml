@@ -50,6 +50,8 @@
     nbproject/build-impl.xml and nbproject/jfx-impl.xml.
 
     -->
+
+     <!-- commenting out due to deb build locking up oaccasionally
      <target name="-post-jfx-deploy">
        <fx:deploy width="${javafx.run.width}" height="${javafx.run.height}" 
                   nativeBundles="all"
@@ -64,5 +66,5 @@
                    vendor="${application.vendor}"/>
         </fx:deploy>          
      </target>
-
+     -->
 </project>
