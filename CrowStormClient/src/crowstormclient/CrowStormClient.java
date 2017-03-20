@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Map;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -28,6 +27,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -74,6 +74,19 @@ public class CrowStormClient extends Application {
         searchResults.setCellFactory(ComboBoxListCell.forListView(data));   
         
         return searchResults;
+    }
+    
+    public VBox addVBox() {
+        VBox vbox = new VBox();
+        
+        // get the search results componant
+        searchResults = addSearchResults();
+        
+        // get the chart componant
+        // TODO: get OHLC chart componant working here
+        
+        vbox.getChildren().addAll(searchResults);
+        return vbox;
     }
     
     public void addSearchHeader(HBox hbox) {
@@ -130,11 +143,14 @@ public class CrowStormClient extends Application {
         primaryStage.setTitle("CrowStormClient v0.0.1");
         
         BorderPane border = new BorderPane();
+        
+        // top header
         HBox hbox = addHBox();
         border.setTop(hbox);
         
-        searchResults = addSearchResults();
-        border.setCenter(searchResults);
+        // center search and chart
+        VBox vbox = addVBox();
+        border.setCenter(vbox);
         
         Scene scene = new Scene(border, 800, 600);
         scene.getStylesheets().add
