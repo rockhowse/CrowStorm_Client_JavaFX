@@ -38,9 +38,12 @@ import org.json.JSONObject;
 
 import candlestickchartapp.CandleStickChart;
 import candlestickchartapp.CandleStickExtraValues;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Parent;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.paint.Color;
 
 
 /**
@@ -48,10 +51,18 @@ import javafx.scene.chart.XYChart;
  * @author rockhowse
  */
 public class CrowStormClient extends Application {
-
+    private static ObservableList data = 
+        FXCollections.observableArrayList();  
+    
+    private ListView searchResults;
+    private TextField searchTextField;
+    
+    private CandleStickChart chart;
+    private NumberAxis xAxis;
+    private NumberAxis yAxis; 
     
     // DAY, OPEN, CLOSE, HIGH, LOW, AVERAGE
-    private static double[][] data2 = new double[][]{
+    private static double[][] chartData = new double[][]{
             {1,  25, 20, 32, 16, 20},
             {2,  26, 30, 33, 22, 25},
             {3,  30, 38, 40, 20, 32},
@@ -83,13 +94,40 @@ public class CrowStormClient extends Application {
             {29, 28, 18, 30, 12, 23},
             {30, 28, 18, 30, 12, 23.2},
             {31, 28, 18, 30, 12, 22}
-    };
- 
-    private CandleStickChart chart;
-    private NumberAxis xAxis;
-    private NumberAxis yAxis;   
+    };  
     
-   public Parent createContent() {
+    public void getPricesForSymbol(String symbol) {
+        String priceData;
+        String[] priceLines;
+        
+        priceData = "NO_DATA_FOUND";
+        
+        double day;
+        double open;
+        double close;
+        double high;
+        double low;
+        double average;
+        
+        // get data from the server and graph it
+        try {
+            priceData = IOUtils.toString(new URL("http://localhost:18080/symbol/csv/" + symbol), Charset.forName("UTF-8"));
+            priceLines = priceData.split("\\r?\\n");
+            
+            for(String line : priceLines) {
+                
+            }
+            
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print(priceData);
+    }
+    
+   public Parent generateChart() {
         xAxis = new NumberAxis(0,32,1);
         xAxis.setMinorTickCount(0);
         yAxis = new NumberAxis();
@@ -99,27 +137,25 @@ public class CrowStormClient extends Application {
         yAxis.setLabel("Price");
         // add starting data
         XYChart.Series<Number,Number> series = new XYChart.Series<Number,Number>();
-        for (int i=0; i< data2.length; i++) {
-            double[] day = data2[i];
+        
+        for (int i=0; i< chartData.length; i++) {
+            double[] day = chartData[i];
             series.getData().add(
                 new XYChart.Data<Number,Number>(day[0],day[1],new CandleStickExtraValues(day[2],day[3],day[4],day[5]))
             );
         }
+        
         ObservableList<XYChart.Series<Number,Number>> data = chart.getData();
+        
         if (data == null) {
             data = FXCollections.observableArrayList(series);
             chart.setData(data);
         } else {
             chart.getData().add(series);
         }
+        
         return chart;
     }    
-    
-    private static ObservableList data = 
-        FXCollections.observableArrayList();  
-    
-    private ListView searchResults;
-    private TextField searchTextField;
              
     public void searchResults() {
         JSONObject json;
@@ -145,6 +181,25 @@ public class CrowStormClient extends Application {
         searchResults.setItems(data);
         searchResults.setCellFactory(ComboBoxListCell.forListView(data));   
         
+        searchResults.getSelectionModel().selectedItemProperty().addListener(
+            new ChangeListener<String>() {
+                public void changed(ObservableValue<? extends String> ov, 
+                    String old_val, String new_val) {
+                    
+                        String firstSymbol;
+                        
+                        // split on ~ for the symbols 
+                        firstSymbol = new_val.split("~")[1];
+                        
+                        // if it has a | we need to trim and get the first one
+                        if(firstSymbol.indexOf("|") >= 0) {
+                            firstSymbol = firstSymbol.split("|")[0];
+                        }
+                        
+                        getPricesForSymbol(firstSymbol);
+            }
+        });       
+        
         return searchResults;
     }
     
@@ -156,7 +211,7 @@ public class CrowStormClient extends Application {
         
         // get the chart componant
         // TODO: get OHLC chart componant working here
-        createContent();
+        generateChart();
         
         vbox.getChildren().addAll(searchResults, chart);
         return vbox;
