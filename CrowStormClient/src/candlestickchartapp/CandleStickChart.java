@@ -46,6 +46,8 @@ public class CandleStickChart extends XYChart<Number, Number> {
         this(xAxis, yAxis);
         setData(data);
     }
+    
+    private Path prevSeriesPath;
  
     // -------------- METHODS ------------------------------------------------------------------------------------------
     /** Called to update and layout the content for the plot */
@@ -152,11 +154,15 @@ public class CandleStickChart extends XYChart<Number, Number> {
                 getPlotChildren().add(candle);
             }
         }
+       
+        
         // create series path
         Path seriesPath = new Path();
         seriesPath.getStyleClass().setAll("candlestick-average-line", "series" + seriesIndex);
         series.setNode(seriesPath);
         getPlotChildren().add(seriesPath);
+        
+        prevSeriesPath = seriesPath;
     }
  
     @Override protected void seriesRemoved(XYChart.Series<Number, Number> series) {
@@ -175,6 +181,10 @@ public class CandleStickChart extends XYChart<Number, Number> {
                 getPlotChildren().remove(candle);
             }
         }
+          // clear out previously drawn series
+        if(prevSeriesPath != null) {
+            getPlotChildren().remove(prevSeriesPath);
+        }      
     }
  
     /**
