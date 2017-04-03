@@ -67,7 +67,7 @@ public class CrowStormClient extends Application {
     private static List<double []> chartData;
     XYChart.Series<Number,Number> prevSeries;
     
-    public void getPricesForSymbol(String symbol) {
+    public double [] getPricesForSymbol(String symbol) {
         String priceData;
         String[] priceLines;
         
@@ -80,12 +80,22 @@ public class CrowStormClient extends Application {
             chartData.clear();
         }
         
+        
+        double minY;
+        double maxY;
+        double minMaxY[];
+        
         double day;
         double open;
         double close;
         double high;
         double low;
         double average;
+       
+        minMaxY = new double[2];
+        
+        minY = 0.0;
+        maxY = 0.0;
         
         // get data from the server and graph it
         try {
@@ -121,6 +131,17 @@ public class CrowStormClient extends Application {
                 double [] dayData = {day, open, close, high, low, average};
                 chartData.add(dayData);
                 
+                if( low < minY || minY == 0.0) {
+                   minY = low;
+                }
+                
+                if(high > maxY){
+                    maxY = high;
+                }
+                
+                minMaxY[0] = minY;
+                minMaxY[1] = maxY;
+          
             }
             
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -130,15 +151,20 @@ public class CrowStormClient extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+           
+        return minMaxY;       
     }
     
-   public Parent generateChart() {
-       
-        
+   public Parent generateChart(double minY, double maxY) {
         xAxis = new NumberAxis(0,32,1);
         xAxis.setMinorTickCount(0);
-        yAxis = new NumberAxis();
+        
+        if(minY > 0.0 && maxY > 0.0) {
+            yAxis = new NumberAxis(minY, maxY, 1);
+            yAxis.setMinorTickCount(0);
+        } else {
+            yAxis = new NumberAxis();
+        }
         
         if(chart == null) {
             chart = new CandleStickChart(xAxis,yAxis);
@@ -213,9 +239,9 @@ public class CrowStormClient extends Application {
                             firstSymbol = firstSymbol.split("|")[0];
                         }
                         
-                        getPricesForSymbol(firstSymbol);
+                        double [] minMaxY = getPricesForSymbol(firstSymbol);
                         
-                        generateChart();
+                        generateChart(minMaxY[0], minMaxY[1]);
             }
         });       
         
@@ -230,7 +256,7 @@ public class CrowStormClient extends Application {
         
         // get the chart componant
         // TODO: get OHLC chart componant working here
-        generateChart();
+        generateChart(0.0, 0.0);
         
         vbox.getChildren().addAll(searchResults, chart);
         return vbox;
